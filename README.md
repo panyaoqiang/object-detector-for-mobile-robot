@@ -1,29 +1,112 @@
-# Onboard Detector
+# 🚀 Object Detector for Mobile Robot (ROS2 Onboard Perception)
 
-`onboard_detector` is a ROS2 package for real-time dynamic obstacle detection, tracking, and velocity estimation on mobile robots. This package operates using an RGB-D camera and vehicle odometry, utilizing both vision-based deep learning and geometry-based point cloud processing algorithms.
+![ROS2](https://img.shields.io/badge/ROS2-Foxy%20%7C%20Humble-blue)
+![C++](https://img.shields.io/badge/C++-14%2F17-blue)
+![Python](https://img.shields.io/badge/Python-3.8+-yellow)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Deep Learning](https://img.shields.io/badge/YOLO-PyTorch%20%7C%20TensorRT-orange)
 
-## Features
+A real-time hybrid 2D/3D dynamic object detection and tracking system designed for autonomous mobile robots.
 
-* **Vision-based Object Detection (YOLO)**: A Python-based node running YOLO for robust 2D object detection. Supports PyTorch models (`.pt`) and TensorRT engines (`.engine`) for fast inference on hardware like Nvidia Jetson. Includes pose/keypoint estimation capabilities.
-* **3D Obstacle Extraction & Clustering**: Processes depth images using U-V depth map projection and DBSCAN clustering from Point Cloud Data (PCL) to generate 3D bounding box proposals.
-* **Tracking & Data Association**: Tracks 3D objects over time using a Kalman Filter to predict and update states across consecutive frames.
-* **Dynamic & Static Classification**: Estimates velocity by analyzing frame-to-frame point cloud consistency and velocity vectors to classify objects as dynamic (moving) or static.
-* **ROS2 Service Interface**: Provides a custom service (`GetDynamicObstacles.srv`) for other nodes to easily query dynamic obstacles within a specific radius.
+## 📖 Overview
+**Object Detector for Mobile Robot** (ROS2 package: `onboard_detector`) is an open-source, lightweight, and extensible perception system. It enables autonomous robots to detect, track, and classify dynamic obstacles in real time by fusing RGB vision and Depth geometries.
 
-## System Architecture
+Built natively on **ROS2**, the system is highly optimized for edge deployment (such as Nvidia Jetson devices) and provides critical environment awareness for navigation, collision avoidance, and spatial monitoring frameworks.
 
-The package contains two main ROS2 nodes:
-1. **`yolo_detector_node` (Python)**: Subscribes to the RGB image and outputs 2D bounding boxes and optional keypoints.
-2. **`dynamic_detector_node` (C++)**: Subscribes to depth images, RGB images, and vehicle odometry/pose. It handles clustering, 3D bounding box generation, 3D tracking (Kalman Filter), and dynamic classification. 
+## ✨ Core Features
+- **Deep-Learning Vision (YOLOv8)**: Fast 2D object and pose/keypoint detection via PyTorch or accelerated via TensorRT (`.engine`).
+- **3D Spatial Clustering (DBSCAN)**: Processes depth map projections and point clouds to extract accurate 3D bounding boxes.
+- **Robust 3D Tracking**: Implements Data Association and a **Kalman Filter** to track objects across consecutive frames and predict future states.
+- **Dynamic State Estimation**: Estimates physical velocity vectors to classify clustered obstacles as either *Dynamic* (moving) or *Static*.
+- **ROS2 Native**: Exposes clean topics and customizable Services (e.g., `GetDynamicObstacles.srv`) for seamless integration with downstream planners.
 
-## Dependencies
+## 🎯 Use Cases
+- **Autonomous Navigation**: Provide real-time dynamic obstacle states (position, velocity) to local path planners for safe collision avoidance.
+- **Indoor Service Robots**: Identify semantic objects (people, furniture) alongside their 3D physical coordinates.
+- **Edge-AI Research**: Serve as a baseline architecture for fusing computationally cheap geometrical algorithms (C++) with modern deep learning (Python) on mobile platforms.
 
-* ROS2 (Tested on foxy/humble)
-* OpenCV (`cv_bridge`)
-* PCL (Point Cloud Library) and `pcl_conversions`
-* PyTorch / torchvision (For Python YOLO node)
-* TensorRT (Optional, if using `.engine` Nano models)
+## 🧠 System Architecture
 
-Ensure standard ROS2 geometry, sensor, and vision message packages are installed:
+The project leverages a hybrid node architecture to maximize performance:
+
+```text
+[RGB Image] ───> YOLO Detector Node (Python) ───> 2D Bounding Boxes ──┐
+                                                                      │ Data Association
+[Depth/PCL] ───> U-V Projection & DBSCAN ───────> 3D Bounding Boxes ──┤
+                       (C++ Node)                                     │ 
+[Odometry]  ───> Ego-motion Compensation  ────────────────────────────┼──> Kalman Filter
+                                                                                   │
+                                  [Robot Decision & Navigation]  <── (Velocity & 3D State)
+```
+
+## 💻 Technologies
+- **Framework:** ROS2 (C++ & Python3)
+- **Computer Vision:** OpenCV, PyTorch, Ultralytics YOLO, TensorRT
+- **Point Cloud / Math:** PCL (Point Cloud Library), Eigen3
+- **Tracking Algorithm:** DBSCAN, Kalman Filter
+
+## 🛠️ Installation & Setup
+
+Ensure you have a working ROS2 environment (Foxy or Humble) with standard perception dependencies (`vision_msgs`, `pcl_conversions`).
+
+**1. Clone the repository into your ROS2 workspace:**
 ```bash
-sudo apt install ros-<ros2-distro>-vision-msgs ros-<ros2-distro>-sensor-msgs ros-<ros2-distro>-pcl-conversions
+cd ~/your_ros2_ws/src
+git clone https://github.com/panyaoqiang/object-detector-for-mobile-robot.git onboard_detector
+```
+
+**2. Build the workspace:**
+```bash
+cd ~/your_ros2_ws
+colcon build --packages-select onboard_detector
+source install/setup.bash
+```
+
+## 🚀 Usage
+
+Launch the complete perception pipeline (vision + 3D tracking):
+
+```bash
+ros2 launch onboard_detector dynamic_detector.launch.py \
+    use_sim_time:=false \
+    use_nano:=true \
+    weights_path:=~/weights
+```
+*Note: Set `use_nano:=true` to infer via TensorRT engines for maximum FPS on edge devices.*
+
+**Querying Moving Obstacles via Service:**
+```bash
+ros2 service call /get_dynamic_obstacles onboard_detector/srv/GetDynamicObstacles "{current_position: {x: 0.0, y: 0.0, z: 0.0}, range: 5.0}"
+```
+
+## 📂 Project Structure
+```text
+onboard_detector/
+├── cfg/                # YAML configuration (tuning limits, tracking params, IOUs)
+├── include/            # C++ Headers (DBSCAN, Kalman Filter, utilities)
+├── launch/             # ROS2 Launch files
+├── rviz/               # Pre-configured RViz2 visualizations
+├── scripts/            # Python nodes (YOLO TensorRT/PyTorch inference)
+├── src/                # C++ source code for 3D state tracking
+├── srv/                # Custom ROS2 service definitions 
+└── CMakeLists.txt / package.xml
+```
+
+## 🛣️ Roadmap
+- [ ] Upgrade to YOLOv9/v11 support.
+- [ ] Multi-camera fusion tracking.
+- [ ] Integrate with ROS2 Nav2 costmaps.
+- [ ] Further C++ optimization for memory footprint.
+
+## 🤝 Contributing
+Contributions are highly welcomed! Whether it is algorithm optimization, bug fixes, or new feature proposals, feel free to open an issue or submit a Pull Request.
+
+## 📄 License
+This project is licensed under the **MIT License**. See the `LICENSE` file for more details.
+
+## 👨‍💻 Author
+**Yaoqiang Pan**
+- GitHub: [@panyaoqiang](https://github.com/panyaoqiang)
+
+---
+⭐️ *If you find this repository helpful for your robotics research or applications, please consider giving it a star!*
