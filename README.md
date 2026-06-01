@@ -9,13 +9,8 @@
 A real-time hybrid 2D/3D dynamic object detection and tracking system designed for autonomous mobile robots.
 
 <div align="center">
-  <img src="media/demo_rviz.png" alt="RViz Demonstration" width="800"/>
+  <img src="media/demo_video.gif" alt="System Demonstration (GIF)" width="800"/>
 </div>
-
-### Demonstration Video
-*(Click below to play demonstrating real-time object tracking)*
-
-<video src="https://github.com/panyaoqiang/object-detector-for-mobile-robot/raw/main/media/demo_video.mp4" controls="controls" width="100%"></video>
 
 ## 📖 Overview
 **Object Detector for Mobile Robot** (ROS2 package: `onboard_detector`) is an open-source, lightweight, and extensible perception system. It enables autonomous robots to detect, track, and classify dynamic obstacles in real time by fusing RGB vision and Depth geometries.
