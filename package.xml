@@ -5,7 +5,7 @@
   <version>1.0.0</version>
   <description>Dynamic Object Detector</description>
   <maintainer email="zhefanx@andrew.cmu.edu">Zhefan Xu</maintainer>
-  <license>Apache License 2.0</license>
+  <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
