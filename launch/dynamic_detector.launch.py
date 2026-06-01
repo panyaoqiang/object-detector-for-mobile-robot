@@ -25,9 +25,16 @@ def generate_launch_description():
         description='Use Nano (.engine) weights if true, otherwise use .pt'
     )
     
+    weights_path_arg = DeclareLaunchArgument(
+        'weights_path',
+        default_value='~/weights',
+        description='Base path to the weights folder'
+    )
+    
     use_sim_time = LaunchConfiguration('use_sim_time')
     use_pose_model = LaunchConfiguration('use_pose_model')
     use_nano = LaunchConfiguration('use_nano')
+    weights_path = LaunchConfiguration('weights_path')
 
     # Define the path to the YAML parameter file
     dynamic_detector_param_path = os.path.join(
@@ -60,7 +67,8 @@ def generate_launch_description():
         parameters=[yolo_detector_param_path, {
             'use_sim_time': use_sim_time, 
             'use_pose_model': use_pose_model,
-            'use_nano': use_nano
+            'use_nano': use_nano,
+            'weights_path': weights_path
         }]
     )
 
@@ -68,6 +76,7 @@ def generate_launch_description():
         use_sim_time_arg,
         use_pose_model_arg,
         use_nano_arg,
+        weights_path_arg,
         dynamic_detector_node,
         yolo_detector_node
     ])

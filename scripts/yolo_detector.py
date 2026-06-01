@@ -28,9 +28,12 @@ class yolo_detector(Node):
         self.img_received = False
         self.img_detected = False
 
-        # init and load ultralytics YOLOv8 model
         # using ament to find the package's share directory where weights are installed
         pkg_share_path = get_package_share_directory('onboard_detector')
+        
+        self.declare_parameter('weights_path', '~/weights')
+        weights_dir = self.get_parameter('weights_path').value
+        weights_dir = os.path.expanduser(weights_dir)
         
         self.declare_parameter('use_pose_model', False)
         self.use_pose = self.get_parameter('use_pose_model').value
@@ -41,9 +44,9 @@ class yolo_detector(Node):
         model_dir = 'pos' if self.use_pose else 'det'
         
         if self.use_nano:
-            weight_path = os.path.join(pkg_share_path, 'weights', model_dir, 'best.engine')
+            weight_path = os.path.join(weights_dir, model_dir, 'best.engine')
         else:
-            weight_path = os.path.join(pkg_share_path, 'weights', model_dir, 'best.pt')
+            weight_path = os.path.join(weights_dir, model_dir, 'best.pt')
 
         self.get_logger().info(f"Loading YOLO model from: {weight_path}")
         if self.use_pose:
