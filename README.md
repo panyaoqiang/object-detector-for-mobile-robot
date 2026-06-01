@@ -22,6 +22,8 @@ Built natively on **ROS2**, the system is highly optimized for edge deployment (
 - **3D Spatial Clustering (DBSCAN)**: Processes depth map projections and point clouds to extract accurate 3D bounding boxes.
 - **Robust 3D Tracking**: Implements Data Association and a **Kalman Filter** to track objects across consecutive frames and predict future states.
 - **Dynamic State Estimation**: Estimates physical velocity vectors to classify clustered obstacles as either *Dynamic* (moving) or *Static*.
+- **Sensor-Fusion Noise Filtering**: Cross-verifies 2D visual semantics (YOLO) with 3D geometric clusters (DBSCAN) to effectively eliminate false positives and individual sensor noise, guaranteeing highly reliable final detections.
+- **Proximity-Focused Perception**: Actively limits the detection scope to nearby obstacles, significantly reducing computational overhead and focusing on targets that truly matter for immediate collision avoidance.
 - **ROS2 Native**: Exposes clean topics and customizable Services (e.g., `GetDynamicObstacles.srv`) for seamless integration with downstream planners.
 
 ## 🎯 Use Cases
